@@ -46,15 +46,26 @@
     win_copy:
       src: raj
       dest: C:\inetpub\wwwroot
+ ### 7zip     
+  - name: Checking 7zip file
+    win_stat: path='C:\7zip.msi'
+    register: stat_file
 
   - name: Download 7zip
     win_get_url:
-      url: https://www.7-zip.org/a/7z1900-x64.exe
-      dest: C:\7zip.exe
+      url: http://7-zip.org/a/7z1604-x64.msi
+      dest: C:\7zip.msi
+    when: stat_file.stat.exists == False
+
+  - name: Check if 7-Zip is already installed
+    win_stat: path='C:\Program Files\7-Zip\7z.exe'
+    register: zip_installed
 
   - name: Install 7zip
     win_package:
-      path: C:\7zip.exe
+      path: C:\7zip.msi
       creates_path: C:\Program Files\7-Zip\7z.exe
       state: present
+    when: zip_installed.stat.exists == False
+
 
