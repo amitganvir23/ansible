@@ -46,9 +46,10 @@
     win_copy:
       src: raj
       dest: C:\inetpub\wwwroot
- ### 7zip     
+ ######### 7zip    ######### 
   - name: Checking 7zip file
-    win_stat: path='C:\7zip.msi'
+    win_stat:
+      path: C:\7zip.msi
     register: stat_file
 
   - name: Download 7zip
@@ -68,4 +69,25 @@
       state: present
     when: zip_installed.stat.exists == False
 
+######### Redis #########
+  - name: Checking redis file
+    win_stat:
+      path: C:\redis.msi
+    register: stat_file
+
+  - name: Download redis
+    win_get_url:
+      url: https://github.com/microsoftarchive/redis/releases/download/win-2.8.2104/Redis-x64-2.8.2104.msi
+      dest: C:\redis.msi
+    when: stat_file.stat.exists == False
+    
+  - name: Check if Redis is already installed
+    win_stat: path='C:\Program Files\Redis\redis-server.exe'
+    register: zip_installed
+
+  - name: Install 7zip
+    win_package:
+      path: C:\redis.msi
+      state: present
+    when: zip_installed.stat.exists == False
 
