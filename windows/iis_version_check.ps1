@@ -15,6 +15,6 @@ If($iisversion -gt 6){
 Else
 {
    Write-Host IIS is NOT above 5 version
-   throw "Error Message"
+   throw "Error Message: IIS having Lower Version"
 
 }
