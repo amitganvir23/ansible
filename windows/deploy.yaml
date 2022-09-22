@@ -1,6 +1,8 @@
 ---
 - hosts: win
-  gather_facts: no
+  gather_facts: yes
+  vars:
+    ram1: "1024" #MB
   tasks:
   - name: Creating A directory
     win_file:
@@ -117,3 +119,19 @@
   - name: RAM debug
     debug:
       msg: "{{ ram_state }}"  
+  ## RAM2 code
+  - name: Checking RAM memory
+    win_shell: "wmic MemoryChip get Capacity|select-string -Pattern '[0-9]'"
+    register: ram_state
+  - shell: "echo '{{ ram_state.stdout }}' | grep [0-9] | sed 's/ //g'|tr -d '\"'"
+    delegate_to: localhost
+    register: ram_state1
+  - shell: "echo {{ ram_state1.stdout }} / 1024 / 1024 |bc"
+    delegate_to: localhost
+    register: ram_size
+  - name: Checking Ram
+    fail:
+      msg: "RAM is LESS {{ ram_size.stdout }}MB"
+    when: ram_size.stdout < ram1
+      #when: ram_state1.stdout < ram3
+      
