@@ -91,3 +91,29 @@
       state: present
     when: zip_installed.stat.exists == False
 
+### System INFO
+  ## disk info
+  - name: Get disk facts
+    win_disk_facts:
+
+  - name: Convert first system disk into various formats
+    debug:
+      msg: 'Disk Size: {{ disksize_gb }}'
+    vars:
+      # Get first system disk
+      disk: '{{ ansible_facts.disks|selectattr("system_disk")|first }}'
+      # Show disk size in Gigabytes
+      disksize_gb: '{{ (disk.size/1000|pow(3))|round|int }} GB'  # returns "240 GB" (value in GB)
+   
+  ## OS version
+  - name: Distribution
+    debug: 
+      msg: "{{ ansible_distribution }}"
+      
+  ## RAM
+  - name: Checking RAM memory
+    win_shell: "wmic MemoryChip get Capacity"
+    register: ram_state
+  - name: RAM debug
+    debug:
+      msg: "{{ ram_state }}"  
