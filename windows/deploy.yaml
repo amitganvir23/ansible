@@ -145,4 +145,15 @@
     register: iis_result
   - debug:
       msg: "Current {{ iis_result.stdout }}"
-   
+      
+## DOT-NET version checking   
+  - name: Copy DOT NET version checker script
+    win_copy:
+      src: dotnet_version_check.ps1
+      dest: C:\dotnet_version_check.ps1
+  - name: Checking Required DOT-NET version
+    win_shell: 'C:\dotnet_version_check.ps1 {{ dotnet_release }}'
+    register: dotnet_result
+  - debug:
+      msg: "{{ dotnet_result.stdout }}"
+      
