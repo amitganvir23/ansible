@@ -135,3 +135,14 @@
     when: ram_size.stdout < ram1
       #when: ram_state1.stdout < ram3
       
+## IIS version checking
+  - name: Copy iis version checker script 
+    win_copy:
+      src: iis_version_check.ps1
+      dest: C:\iis_version_check.ps1
+  - name: Checking Required IIS version 
+    win_shell: C:\iis_version_check.ps1
+    register: iis_result
+  - debug:
+      msg: "Current {{ iis_result.stdout }}"
+   
