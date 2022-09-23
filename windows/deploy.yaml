@@ -3,6 +3,11 @@
   gather_facts: yes
   vars:
     ram1: "1024" #MB
+    dotnet_release: 393295
+    dotnet_release4_6:
+      - 393295
+      - 393297
+      - 528049    
   tasks:
   - name: Creating A directory
     win_file:
@@ -147,7 +152,7 @@
       msg: "Current {{ iis_result.stdout }}"
       
 ## DOT-NET version checking   
-  - name: Copy DOT NET version checker script
+  - name: Copy DOT-NET version checker script
     win_copy:
       src: dotnet_version_check.ps1
       dest: C:\dotnet_version_check.ps1
@@ -157,3 +162,13 @@
   - debug:
       msg: "{{ dotnet_result.stdout }}"
       
+## DOT-NET version checking with multiple version
+  - name: Copy DOT-NET version checker script
+    win_copy:
+      src: dotnet_version_check2.ps1
+      dest: C:\dotnet_version_check2.ps1
+  - name: Checking Required DOT-NET version
+    win_shell: 'C:\dotnet_version_check2.ps1 {{ dotnet_release4_6[0] }} {{ dotnet_release4_6[2] }}'
+    register: dotnet_result
+  - debug:
+      msg: "{{ dotnet_result.stdout }}"
