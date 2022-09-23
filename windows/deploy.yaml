@@ -186,4 +186,15 @@
     fail:
       msg: "Error Message, SSMS might NOT Installed" 
     when:  
-      ssms_result.rc == 1      
+      ssms_result.rc == 1
+      
+## MS-SQL Checker
+  - name: Copy MS-SQL version checker script
+    win_copy:
+      src: mssql_version_check.ps1
+      dest: C:\mssql_version_check.ps1
+  - name: Checking Required MS-SQL version
+    win_shell: 'C:\mssql_version_check.ps1 {{ mssql_version[0] }}'
+    register: mssql_result
+  - debug:
+      msg: "{{ mssql_result.stdout }}"
