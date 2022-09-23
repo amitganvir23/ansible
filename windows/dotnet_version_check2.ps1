@@ -1,5 +1,6 @@
 #Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
 #https://learn.microsoft.com/en-us/dotnet/framework/migration-guide/versions-and-dependencies
+#https://learn.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
 
 $dotnetInfo = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
 $version = "$($dotnetInfo.Version)"
