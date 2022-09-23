@@ -172,3 +172,18 @@
     register: dotnet_result
   - debug:
       msg: "{{ dotnet_result.stdout }}"
+      
+## Checking version of SSMS - SQL Studio Management Studio
+#regedit - HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSOLEDBSQL
+#https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16 - https://aka.ms/ssmsfullsetup
+  - name: Checking SSMS Software
+    win_shell: 'Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSOLEDBSQL\CurrentVersion"' 
+    register: ssms_result
+    ignore_errors: True
+  - debug:
+      msg: "{{ ssms_result.stdout }}"
+  - name: Checking SSMS Software
+    fail:
+      msg: "Error Message, SSMS might NOT Installed" 
+    when:  
+      ssms_result.rc == 1      
