@@ -1,0 +1,57 @@
+---
+- hosts: win
+  gather_facts: yes
+  vars:
+    ram1: "1024" #MB
+    dotnet_release: 393295
+    dotnet_release4_6:
+      - 393295
+      - 393297
+      - 528049    
+  tasks:
+ ######### 7zip    ######### 
+  - name: Checking 7zip file
+    win_stat:
+      path: C:\7zip.msi
+    register: stat_file
+
+  - name: Download 7zip
+    win_get_url:
+      url: http://7-zip.org/a/7z1604-x64.msi
+      dest: C:\7zip.msi
+    when: stat_file.stat.exists == False
+
+  - name: Check if 7-Zip is already installed
+    win_stat: path='C:\Program Files\7-Zip\7z.exe'
+    register: zip_installed
+
+  - name: Install 7zip
+    win_package:
+      path: C:\7zip.msi
+      creates_path: C:\Program Files\7-Zip\7z.exe
+      state: present
+    when: zip_installed.stat.exists == False
+
+######### Redis #########
+  - name: Checking redis file
+    win_stat:
+      path: C:\redis.msi
+    register: stat_file
+
+  - name: Download redis
+    win_get_url:
+      url: https://github.com/microsoftarchive/redis/releases/download/win-2.8.2104/Redis-x64-2.8.2104.msi
+      dest: C:\redis.msi
+    when: stat_file.stat.exists == False
+    
+  - name: Check if Redis is already installed
+    win_stat:
+      path: C:\Program Files\Redis\redis-server.exe
+    register: redis_installed
+
+  - name: Install REDIS
+    win_package:
+      path: C:\redis.msi
+      state: present
+    when: redis_installed.stat.exists == False
+

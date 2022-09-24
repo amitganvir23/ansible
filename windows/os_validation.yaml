@@ -1,0 +1,28 @@
+---
+- hosts: win
+  gather_facts: yes
+  vars:
+    ram1: "1024" #MB
+    dotnet_release4_6:
+      - 393295
+      - 393297
+      - 528049    
+    mssql_version:
+      - 13
+  tasks:
+### System INFO
+  ## OS version
+  - name: Distribution
+    debug: 
+      msg: "{{ ansible_distribution }}"
+  - name: OS Family
+    debug: 
+      msg: "{{ ansible_os_family }}"
+  - name: Distribution Major Version
+    debug: 
+      msg: "{{ ansible_distribution_major_version }}"
+  - fail:
+       msg: "Error.. It is NOT a Windows Machine"
+    when: '"Windows" not in ansible_distribution'
+  - debug:
+      msg: "Playbook is in Progress"

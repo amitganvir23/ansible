@@ -1,0 +1,106 @@
+---
+- hosts: win
+  gather_facts: yes
+  vars:
+    ram1: "1024" #MB
+    dotnet_release4_6:
+      - 393295
+      - 393297
+      - 528049    
+    mssql_version:
+      - 13
+  tasks:
+### System INFO
+  ## disk info
+  - name: Get disk facts
+    win_disk_facts:
+
+  - name: Convert first system disk into various formats
+    debug:
+      msg: 'Disk Size: {{ disksize_gb }}'
+    vars:
+      # Get first system disk
+      disk: '{{ ansible_facts.disks|selectattr("system_disk")|first }}'
+      # Show disk size in Gigabytes
+      disksize_gb: '{{ (disk.size/1000|pow(3))|round|int }} GB'  # returns "240 GB" (value in GB)
+   
+  ## OS version
+  - name: Distribution
+    debug: 
+      msg: "{{ ansible_distribution }}"
+  - name: OS Family
+    debug: 
+      msg: "{{ ansible_os_family }}"
+  - name: Distribution Major Version
+    debug: 
+      msg: "{{ ansible_distribution_major_version }}"
+  - fail:
+       msg: "Error.. It is NOT a Windows Machine"
+    when: '"Windows" not in ansible_distribution'
+  - debug:
+      msg: "Playbook is in Progress"
+      
+  ## RAM
+  - name: Checking RAM memory
+    win_shell: "wmic MemoryChip get Capacity|select-string -Pattern '[0-9]'"
+    register: ram_state
+  - shell: "echo '{{ ram_state.stdout }}' | grep [0-9] | sed 's/ //g'|tr -d '\"'"
+    delegate_to: localhost
+    register: ram_state1
+  - shell: "echo {{ ram_state1.stdout }} / 1024 / 1024 |bc"
+    delegate_to: localhost
+    register: ram_size
+  - name: Checking Ram
+    fail:
+      msg: "RAM is LESS {{ ram_size.stdout }}MB"
+    when: ram_size.stdout < ram1
+      #when: ram_state1.stdout < ram3
+      
+## IIS version checking
+  - name: Copy iis version checker script 
+    win_copy:
+      src: iis_version_check.ps1
+      dest: C:\iis_version_check.ps1
+  - name: Checking Required IIS version 
+    win_shell: C:\iis_version_check.ps1
+    register: iis_result
+  - debug:
+      msg: "Current {{ iis_result.stdout }}"
+      
+## DOT-NET version checking with multiple version
+  - name: Copy DOT-NET version checker script
+    win_copy:
+      src: dotnet_version_check2.ps1
+      dest: C:\dotnet_version_check2.ps1
+  - name: Checking Required DOT-NET version
+    win_shell: 'C:\dotnet_version_check2.ps1 {{ dotnet_release4_6[0] }} {{ dotnet_release4_6[2] }}'
+    register: dotnet_result
+  - debug:
+      msg: "{{ dotnet_result.stdout }}"
+      
+## Checking version of SSMS - SQL Studio Management Studio
+#regedit - HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSOLEDBSQL
+#https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16 - https://aka.ms/ssmsfullsetup
+#SSMS version is 18.12.1
+  - name: Checking SSMS Software
+    win_shell: 'Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSOLEDBSQL\CurrentVersion"' 
+    register: ssms_result
+    ignore_errors: True
+  - debug:
+      msg: "{{ ssms_result.stdout }}"
+  - name: Checking SSMS Software
+    fail:
+      msg: "Error Message, SSMS might NOT Installed" 
+    when:  
+      ssms_result.rc == 1
+      
+## MS-SQL Checker
+  - name: Copy MS-SQL version checker script
+    win_copy:
+      src: mssql_version_check.ps1
+      dest: C:\mssql_version_check.ps1
+  - name: Checking Required MS-SQL version
+    win_shell: 'C:\mssql_version_check.ps1 {{ mssql_version[0] }}'
+    register: mssql_result
+  - debug:
+      msg: "{{ mssql_result.stdout }}"

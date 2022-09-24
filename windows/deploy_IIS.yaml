@@ -1,0 +1,54 @@
+---
+- hosts: win
+  gather_facts: yes
+  vars:
+    ram1: "1024" #MB
+    dotnet_release: 393295
+    dotnet_release4_6:
+      - 393295
+      - 393297
+      - 528049    
+  tasks:
+  - name: Install IIS (Web-Server only)
+    win_feature:
+      name: Web-Server
+      state: present
+
+  - name: Install IIS (Web-Server and Web-Common-Http)
+    win_feature:
+      name:
+      - Web-Server
+      - Web-Common-Http
+      state: present
+
+      #  - name: Install NET-Framework-Core from file
+      #win_feature:
+      # name: NET-Framework-Core
+      #    source: C:\Temp\iso\sources\sxs
+      # state: present
+
+  - name: Install IIS Web-Server with sub features and management tools
+    win_feature:
+      name: Web-Server
+      state: present
+      include_sub_features: yes
+      include_management_tools: yes
+    register: win_feature
+
+  - name: Reboot if installing Web-Server feature requires it
+    win_reboot:
+    when: win_feature.reboot_required
+
+## CODE - 9
+  - name: Copy CODE contents recursively
+    win_copy:
+      src: raj
+      dest: C:\inetpub\wwwroot
+
+##BisStore\temp - 11
+  - name: Creating BisStore directory
+    win_file:
+      path: C:\BisStore\temp
+      state: directory
+
+##BisStore\temp - 12
